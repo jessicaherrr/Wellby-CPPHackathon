@@ -39,6 +39,10 @@ export default function Dashboard({
   statusText,
   breakMinutes,
   history,
+  todos = [],
+  onToggleTodo,
+  dueDate = "",
+  onDueDateChange,
   onTaskInputChange,
   onTaskStart,
   onTaskComplete,
@@ -55,6 +59,9 @@ export default function Dashboard({
     session.elapsedSeconds > 0 ? ((session.actions / session.elapsedSeconds) * 60).toFixed(1) : "0.0";
   const statusPill = getStatusPill(colors, burnRate);
   const { label: statusLabel, ...statusPillStyles } = statusPill;
+
+  const incompleteTodos = todos.filter(todo => !todo.completed);
+  const completedTodos = todos.filter(todo => todo.completed);
 
   return (
     <div
@@ -142,22 +149,86 @@ export default function Dashboard({
                 className="w-full rounded-2xl border-0 px-4 py-3 text-base outline-none"
                 style={{ background: colors.secondary, color: colors.secondaryText }}
               />
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => onDueDateChange(e.target.value)}
+                className="rounded-2xl px-4 py-3 text-base"
+                style={{ background: colors.secondary, color: colors.secondaryText }}
+              />
               <button
                 onClick={onTaskStart}
                 className="rounded-2xl px-5 py-3 font-bold"
                 style={{ background: colors.primary, color: colors.primaryText }}
               >
-                Start task
-              </button>
-              <button
-                onClick={onTaskComplete}
-                disabled={!session.activeTask}
-                className="rounded-2xl px-5 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-50"
-                style={{ background: colors.breakBtn, color: colors.breakBtnText }}
-              >
-                Complete
+                Add Task
               </button>
             </div>
+
+            {/* Todo List Section */}
+            <div className="mt-6">
+              <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
+                Todo List
+              </p>
+              <div className="mt-3 space-y-2">
+                {incompleteTodos.length > 0 ? (
+                  incompleteTodos.map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="rounded-2xl px-4 py-3 text-sm flex items-center justify-between"
+                      style={{ background: colors.secondary }}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={todo.completed}
+                          onChange={() => onToggleTodo(todo.id)}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                        <span className="flex-1">{todo.name}</span>
+                        {todo.dueDate && (
+                          <span className="text-xs px-2 py-1 rounded" style={{ background: colors.muted + "20", color: colors.muted }}>
+                            Due: {new Date(todo.dueDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div
+                    className="rounded-2xl px-4 py-3 text-sm"
+                    style={{ background: colors.secondary, color: colors.muted }}
+                  >
+                    No pending tasks. Add a new task above!
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Completed Tasks Section */}
+            {completedTodos.length > 0 && (
+              <div className="mt-6">
+                <p className="text-sm font-bold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
+                  Completed
+                </p>
+                <div className="mt-3 space-y-2">
+                  {completedTodos.slice(-5).reverse().map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="rounded-2xl px-4 py-3 text-sm line-through opacity-60 flex items-center justify-between"
+                      style={{ background: colors.secondary }}
+                    >
+                      <span>{todo.name}</span>
+                      {todo.dueDate && (
+                        <span className="text-xs" style={{ color: colors.muted }}>
+                          Due: {new Date(todo.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {[

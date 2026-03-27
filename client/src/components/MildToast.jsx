@@ -16,7 +16,7 @@ export default function MildToast({
   useEffect(() => {
     const timer = setTimeout(() => {
       onSnooze();
-    }, 60000);
+    },  15 * 60 * 1000); // 15 min
     return () => clearTimeout(timer);
   }, [onSnooze]);
 
@@ -69,7 +69,7 @@ export default function MildToast({
                 className="rounded-full border px-4 py-2 text-sm font-bold"
                 style={{ borderColor: colors.muted, color: colors.muted }}
               >
-                5 more minutes
+                15 more minutes
               </button>
             ) : null}
             <button

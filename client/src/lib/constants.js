@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   sessions: "wellby.sessions",
   fatigueOptIn: "wellby.fatigueOptIn",
   breakLogs: "wellby.breakLogs",
+  todos: "wellby_todos",
   gameScores: "wellby.gameScores"
 };
 

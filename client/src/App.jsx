@@ -58,6 +58,7 @@ export default function App() {
   const [sessions, setSessions] = useLocalStorage(STORAGE_KEYS.sessions, []);
   const [fatigueOptIn, setFatigueOptIn] = useLocalStorage(STORAGE_KEYS.fatigueOptIn, false);
   const [breakLogs, setBreakLogs] = useLocalStorage(STORAGE_KEYS.breakLogs, []);
+  const [todos, setTodos] = useLocalStorage(STORAGE_KEYS.todos, []);
   const [session, setSession] = useState(createSession);
   const [apiBurnRate, setApiBurnRate] = useState(0.18);
   const [breakOpen, setBreakOpen] = useState(false);
@@ -79,6 +80,7 @@ export default function App() {
   const [flowRatio, setFlowRatio] = useState(1);
   const [notificationState, setNotificationState] = useState(null);
   const [lastApiUpdatedAt, setLastApiUpdatedAt] = useState(0);
+  const [taskDueDate, setTaskDueDate] = useState(""); // 新增：截止日期状态
   const apiRefreshRef = useRef(0);
   const activeToastIdRef = useRef(null);
   const escalateOnNextRef = useRef(false);
@@ -362,16 +364,35 @@ export default function App() {
       return;
     }
 
+    const newTodo = {
+      id: Date.now(),
+      name: session.taskInput.trim(),
+      completed: false,
+      dueDate: taskDueDate || null, //due date
+      createdAt: new Date().toISOString()
+    };
+
+    setTodos((current) => [...current, newTodo]);
+
     setSession((current) => ({
       ...current,
-      actions: current.actions + 1,
-      activeTask: {
-        id: Date.now(),
-        name: current.taskInput.trim(),
-        startedAt: Date.now()
-      },
       taskInput: ""
     }));
+    setTaskDueDate("");
+  }
+
+  function handleToggleTodo(todoId) {
+    setTodos((current) =>
+      current.map((todo) =>
+        todo.id === todoId
+          ? { 
+              ...todo, 
+              completed: !todo.completed, 
+              completedAt: !todo.completed ? new Date().toISOString() : undefined 
+            }
+          : todo
+      )
+    );
   }
 
   function handleTaskComplete() {
@@ -435,6 +456,10 @@ export default function App() {
         }
         breakMinutes={breakMinutes}
         history={history}
+        todos={todos}
+        onToggleTodo={handleToggleTodo}
+        dueDate={taskDueDate}
+        onDueDateChange={setTaskDueDate}
         onTaskInputChange={(value) => setSession((current) => ({ ...current, taskInput: value }))}
         onTaskStart={handleTaskStart}
         onTaskComplete={handleTaskComplete}
